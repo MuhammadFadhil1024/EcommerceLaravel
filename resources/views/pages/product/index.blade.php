@@ -188,6 +188,8 @@ new class extends Component {
                                     <flux:button variant="ghost" size="sm" icon="pencil" inset="top bottom"
                                         wire:click="edit({{ $product->id }})">
                                     </flux:button>
+                                    <flux:button variant="ghost" size="sm" icon="photo" inset="top bottom" :href="route('product.image.index', $product->id)" wire:navigate>
+                                    </flux:button>
                                     <flux:button variant="ghost" size="sm" icon="trash" inset="top bottom"
                                         wire:click="showDeleteConfirmation({{ $product->id }})">
                                     </flux:button>
