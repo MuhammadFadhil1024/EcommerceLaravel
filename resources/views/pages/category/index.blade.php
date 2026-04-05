@@ -90,9 +90,11 @@ new class extends Component {
                 return;
             }
             app(DeleteCategory::class)->delete($categoryId);
+            FLux::modal('confirm-delete')->close();
             session()->flash('success', 'Category deleted successfully.');
-        } catch (\Exception $e) {
+            } catch (\Exception $e) {
             Log::error("Error delete category" . $e->getMessage());
+            FLux::modal('confirm-delete')->close();
             session()->flash('error', 'Failed to delete category: ');
         }
     }
