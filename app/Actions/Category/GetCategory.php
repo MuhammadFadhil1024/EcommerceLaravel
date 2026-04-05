@@ -34,4 +34,16 @@ Class GetCategory
             return false;
         }
     }
+
+    public function searchCategory(string $search): \Illuminate\Database\Eloquent\Collection
+    {
+        if (empty($search)) {
+             return collect();
+        }
+
+        return Category::where('name', 'like', '%' . $search . '%')
+            ->where('is_active', 1)
+            ->take(5) // Batasi hasil agar dropdown tidak terlalu panjang
+            ->get();
+    }
 }
