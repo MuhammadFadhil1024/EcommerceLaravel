@@ -3,7 +3,12 @@
 namespace App\Actions\Product;
 
 use App\Models\Product;
+use App\Models\ProductGallery;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Drivers\Gd\Encoders\GifEncoder;
+use Intervention\Image\ImageManager;
 
 Class UpdateProduct
 {
@@ -14,7 +19,7 @@ Class UpdateProduct
         return $slug;
     }
 
-      private function cleaningPrice($price)
+    private function cleaningPrice($price)
     {
         // Jika input kosong, kembalikan 0
         if (empty($price)) {
@@ -68,6 +73,52 @@ Class UpdateProduct
         $product->fill($data);
         $product->save();
         return $product;
+    }
 
+    public function addProductImage(int $productId, array $data)
+    {
+        $manager = new ImageManager(new Driver());
+        $image = $manager->decode($data['image']);
+        $webpThumbnail = $image->encode(new GifEncoder());
+
+        $fileName = uniqid() . '.webp';
+        $path = 'productImages/' . $fileName;
+
+        Storage::disk('public')->put($path, $webpThumbnail);
+
+        $data['image'] = $path;
+        $data['product_id'] = $productId;
+        $productImage = new ProductGallery();
+        $productImage->fill($data);
+        $productImage->save();
+        return $productImage;
+    }
+
+    /**
+     * Mengatur gambar tertentu menjadi gambar utama (featured)
+     */
+    public function setAsFeatured(int $productId, int $imageId)
+    {
+        // 1. Reset semua gambar milik produk ini agar tidak ada yang featured
+        ProductGallery::where('product_id', $productId)->update(['is_featured' => 0]);
+
+        // 2. Set gambar yang dipilih menjadi featured
+        ProductGallery::findOrFail($imageId)->update(['is_featured' => 1]);
+    }
+
+    /**
+     * Menghapus gambar produk dari database dan storage
+     */
+    public function deleteProductImage(int $imageId)
+    {
+        $image = ProductGallery::findOrFail($imageId);
+
+        // 1. Hapus file fisik dari storage lokal (jika file-nya ada)
+        if ($image->image && Storage::disk('public')->exists($image->image)) {
+            Storage::disk('public')->delete($image->image);
+        }
+
+        // 2. Hapus data dari database
+        $image->delete();
     }
 }

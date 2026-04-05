@@ -3,6 +3,7 @@
 namespace App\Actions\Product;
 
 use App\Models\Product;
+use App\Models\ProductGallery;
 
 Class GetProduct
 {
@@ -23,5 +24,11 @@ Class GetProduct
     public function getProductById(int $productId): ?Product
     {
         return Product::findOrFail($productId);
+    }
+
+    public function getProductImages(int $productId)
+    {
+        $productImage = ProductGallery::where('product_id', $productId)->get();
+        return $productImage;
     }
 }
