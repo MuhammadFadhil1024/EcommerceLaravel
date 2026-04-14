@@ -18,7 +18,7 @@ class ExampleTest extends TestCase
     public function test_example()
     {
         // Asumsi URL halaman home Anda adalah '/'
-        $response = $this->get('/home'); // 5. Sesuaikan URL dengan route yang benar
+        $response = $this->get('/'); // 5. Sesuaikan URL dengan route yang benar
 
         $response->assertStatus(200);
     }
