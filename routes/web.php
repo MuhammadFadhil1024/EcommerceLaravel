@@ -1,8 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Session;
 
-Route::view('/', 'welcome')->name('home');
+Route::livewire('/', 'pages::frontend.home')->name('home');
+Route::livewire('/detail/{slug}', 'pages::frontend.detail')->name('detail');
+Route::livewire('/cart', 'pages::frontend.cart')->name('cart');
+Route::get('/clear', function () {
+    Session::forget('cart');
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
