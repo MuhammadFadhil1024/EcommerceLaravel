@@ -18,7 +18,7 @@
                                 class="text-black {{ \Route::current()->getName() == 'index' ? 'md:text-white' : 'md:text-black' }} hover:underline">Showcase</a>
                         </li> --}}
                             <li class="mx-3 py-6 md:py-0">
-                                <a href="#" class="text-black hover:underline">Catalog</a>
+                                <a href="{{ route('products') }}" class="text-black hover:underline" wire:navigate>Catalog</a>
                             </li>
                             <li class="mx-3 py-6 md:py-0">
                                 <a href="#" class="text-black hover:underline">Delivery</a>

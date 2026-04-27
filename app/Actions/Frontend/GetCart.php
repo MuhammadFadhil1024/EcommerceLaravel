@@ -29,7 +29,7 @@ Class GetCart
                 Session::forget('cart');
             }
 
-            $cart = Cart::with('cartItems.product.galleries')->where('user_id', Auth::id())->first();
+            $cart = Cart::with(['cartItems.product.galleries', 'cartItems.product.category'])->where('user_id', Auth::id())->first();
             $cartItems = [];
             if ($cart->cartItems()->exists()) {
                 foreach ($cart->cartItems as $item) {

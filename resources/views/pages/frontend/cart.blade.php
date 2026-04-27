@@ -193,7 +193,7 @@ new #[Layout('layouts.frontend')] class extends Component {
                         </div>
 
                         <div class="w-full md:w-auto">
-                            <a href="#"
+                            <button 
                                 class="group relative flex items-center justify-center w-full md:w-64 py-4 px-8 font-semibold text-black bg-pink-400 rounded-full overflow-hidden transition-all duration-300 hover:bg-black hover:text-white hover:shadow-xl hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-pink-300">
                                 <div
                                     class="absolute inset-0 w-full h-full -x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-shimmer">
@@ -208,7 +208,7 @@ new #[Layout('layouts.frontend')] class extends Component {
                                             d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
                                     </svg>
                                 </span>
-                            </a>
+                            </button>
                         </div>
 
                     </div>
