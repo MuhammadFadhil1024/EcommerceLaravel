@@ -13,7 +13,8 @@
                 <nav class="hidden md:block">
                     <ul class="flex items-center gap-6">
                         <li>
-                            <a href="{{ route('products') }}" class="text-black hover:underline" wire:navigate>Catalog</a>
+                            <a href="{{ route('products') }}" class="text-black hover:underline"
+                                wire:navigate>Catalog</a>
                         </li>
                         <li>
                             <a href="#" class="text-black hover:underline">Delivery</a>
@@ -40,6 +41,13 @@
                                             class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
                                             Cart
                                         </a>
+                                        <form method="POST" action="{{ route('logout') }}">
+                                            @csrf
+                                            <button type="submit"
+                                                class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                                Logout
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </li>
@@ -64,16 +72,20 @@
                 </button>
             </div>
 
-            <div x-cloak x-show="mobileOpen" class="mt-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-lg md:hidden">
+            <div x-cloak x-show="mobileOpen"
+                class="mt-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-lg md:hidden">
                 <ul class="space-y-2">
                     <li>
-                        <a href="{{ route('products') }}" wire:navigate class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Catalog</a>
+                        <a href="{{ route('products') }}" wire:navigate
+                            class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Catalog</a>
                     </li>
                     <li>
-                        <a href="#" class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Delivery</a>
+                        <a href="#"
+                            class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Delivery</a>
                     </li>
                     <li>
-                        <a href="#" class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Rewards</a>
+                        <a href="#"
+                            class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Rewards</a>
                     </li>
 
                     @auth
@@ -81,7 +93,8 @@
                             <button type="button" @click="profileOpen = !profileOpen"
                                 class="flex w-full items-center justify-between rounded-lg border border-gray-200 px-3 py-2 text-left text-sm font-semibold text-gray-800">
                                 <span class="flex items-center gap-2">
-                                    <span class="flex h-7 w-7 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white">
+                                    <span
+                                        class="flex h-7 w-7 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white">
                                         {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr(auth()->user()->name, 0, 1)) }}
                                     </span>
                                     Account
@@ -98,11 +111,19 @@
                                     class="block rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-white">
                                     Cart
                                 </a>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit"
+                                        class="block w-full rounded-md px-3 py-2 text-left text-sm text-gray-700 hover:bg-white">
+                                        Logout
+                                    </button>
+                                </form>
                             </div>
                         </li>
                     @else
                         <li>
-                            <a href="{{ route('cart') }}" wire:navigate class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cart</a>
+                            <a href="{{ route('cart') }}" wire:navigate
+                                class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cart</a>
                         </li>
                     @endauth
                 </ul>

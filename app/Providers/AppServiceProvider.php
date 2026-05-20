@@ -2,11 +2,15 @@
 
 namespace App\Providers;
 
+use App\Http\Responses\LoginResponse;
+use App\Http\Responses\RegistrationResponse;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
+use Laravel\Fortify\Contracts\RegisterResponse as RegistrationResponseContract;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +28,9 @@ class AppServiceProvider extends ServiceProvider
             \App\Services\Xendit\XenditServiceInterface::class,
             \App\Services\Xendit\XenditService::class
         );
+
+        $this->app->singleton(LoginResponseContract::class, LoginResponse::class);
+        $this->app->singleton(RegistrationResponseContract::class, RegistrationResponse::class);
     }
 
     /**
