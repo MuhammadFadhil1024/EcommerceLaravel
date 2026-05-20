@@ -6,10 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Transaction extends Model
 {
-    protected $fillable = ['user_id', 'address_id', 'total_price', 'status', 'courier', 'payment_method', 'payment_url'];
+    protected $fillable = [
+        'user_id', 'address_id', 'reference_id', 'session_id',
+        'total_payment', 'courier_cost', 'courier',
+        'payment_date', 'expires_at',
+        'status', 'payment_method', 'payment_url',
+    ];
 
     protected $casts = [
-        'total_price' => 'decimal:2',
+        'total_payment' => 'decimal:2',
+        'courier_cost' => 'decimal:2',
+        'payment_date' => 'datetime',
+        'expires_at' => 'datetime',
     ];
 
     public function user()

@@ -19,6 +19,11 @@ class AppServiceProvider extends ServiceProvider
             \App\Services\RajaOngkir\RajaOngkirServiceInterface::class,
             \App\Services\RajaOngkir\RajaOngkirService::class
         );
+
+        $this->app->bind(
+            \App\Services\Xendit\XenditServiceInterface::class,
+            \App\Services\Xendit\XenditService::class
+        );
     }
 
     /**

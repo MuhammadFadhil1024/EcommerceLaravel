@@ -9,4 +9,11 @@ interface RajaOngkirServiceInterface
     public function getCity(int $provinceId);
 
     public function getDistrict(int $cityId);
+
+    public function getCourierCost(
+        int $originDistrictId,
+        int $destinationDistrictId,
+        int $weightInGrams,
+        string $courier,
+    );
 }

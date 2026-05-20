@@ -31,16 +31,20 @@ Class GetCart
 
             $cart = Cart::with(['cartItems.product.galleries', 'cartItems.product.category'])->where('user_id', Auth::id())->first();
             $cartItems = [];
-            if ($cart->cartItems()->exists()) {
+
+            // Tambahkan pengecekan apakah $cart tidak null sebelum memanggil cartItems()
+            if ($cart && $cart->cartItems()->exists()) {
                 foreach ($cart->cartItems as $item) {
                     $cartItems[] = [
                         'cart_item_id' => $item->id,
                         'product_id' => $item->product_id,
                         'quantity' => $item->quantity,
                         'product' => $item->product,
+                        'weight' => $item->product->weight, // Pastikan $item->product juga tidak null
                     ];
                 }
             }
+
             Log::info('Cart items for user ' . Auth::id() . ': ' . json_encode($cartItems));
             return $cartItems;
         } else {

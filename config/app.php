@@ -123,4 +123,16 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Xendit Return Host
+    |--------------------------------------------------------------------------
+    |
+    | HTTPS URL host for Xendit success/cancel return URLs.
+    | Gunakan URL ngrok untuk development.
+    |
+    */
+
+    'xendit_return_host' => env('XENDIT_RETURN_HOST', 'https://absentee-gladiator-appealing.ngrok-free.dev'),
+
 ];

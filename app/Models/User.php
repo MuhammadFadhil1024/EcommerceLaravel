@@ -43,4 +43,9 @@ class User extends Authenticatable
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
+
+    public function addresses()
+    {
+        return $this->hasMany(Address::class);
+    }
 }

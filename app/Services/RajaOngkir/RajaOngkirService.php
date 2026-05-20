@@ -2,9 +2,10 @@
 
 namespace App\Services\RajaOngkir;
 
-use Illuminate\Support\Facades\Http;
 use Exception;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class RajaOngkirService implements RajaOngkirServiceInterface {
@@ -104,6 +105,61 @@ class RajaOngkirService implements RajaOngkirServiceInterface {
             } catch (\Exception $e) {
                 Log::error('Koneksi ke Raja Ongkir gagal: ' . $e->getMessage());
                 throw new Exception("Gagal terhubung ke server Raja Ongkir. Cek koneksi Anda.");
+            }
+        }
+
+        public function getCourierCost(
+            int $originDistrictId,
+            int $destinationDistrictId,
+            int $weightInGrams,
+            string $courier,
+        ) {
+            $cacheKey = 'raja_ongkir_courier_cost_'
+                . $originDistrictId . '_'
+                . $destinationDistrictId . '_'
+                . $weightInGrams . '_'
+                . $courier;
+
+            try {
+                return Cache::remember($cacheKey, 3600, function () use ($originDistrictId, $destinationDistrictId, $weightInGrams, $courier) {
+                    $response = Http::withHeaders([
+                        'accept' => 'application/json',
+                        'key' => env('RAJA_ONGKIR_KEY'),
+                    ])->asForm()->timeout(10)->post($this->rajaOngkirBaseUrl . "calculate/district/domestic-cost", [
+                        'origin' => $originDistrictId,
+                        'destination' => $destinationDistrictId,
+                        'weight' => $weightInGrams,
+                        'courier' => $courier,
+                        'price' => 'lowest',
+                    ]);
+
+                    if ($response->successful()) {
+                        return $response->json();
+                    }
+
+                    if ($response->status() === 404) {
+                        throw new Exception("Cost not found.");
+                    }
+
+                    $apiMessage = (string) data_get($response->json(), 'meta.message', 'Gagal menghitung ongkir.');
+
+                    Log::error('Raja Ongkir calculate courier cost failed', [
+                        'status' => $response->status(),
+                        'response' => $response->body(),
+                        'origin' => $originDistrictId,
+                        'destination' => $destinationDistrictId,
+                        'weight' => $weightInGrams,
+                        'courier' => $courier,
+                    ]);
+
+                    throw new Exception($apiMessage);
+                });
+            } catch (ConnectionException $e) {
+                Log::error('Koneksi ke Raja Ongkir gagal: ' . $e->getMessage());
+                throw new Exception('Gagal terhubung ke server Raja Ongkir. Cek koneksi Anda.');
+            } catch (\Exception $e) {
+                Log::error('Raja Ongkir calculate courier cost exception: ' . $e->getMessage());
+                throw $e;
             }
         }
 }
