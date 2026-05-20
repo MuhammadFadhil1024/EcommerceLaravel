@@ -25,7 +25,7 @@ new class extends Component {
     public function storeCategory(CreateNewCategory $createNewCategory)
     {
 
-        $this->validate();
+        $validated = $this->validate();
 
         try {
             $data = [

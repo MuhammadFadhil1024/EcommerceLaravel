@@ -199,7 +199,7 @@ new #[Layout('layouts.frontend')] class extends Component {
                                     class="absolute inset-0 w-full h-full -x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-shimmer">
                                 </div>
 
-                                <span class="relative flex items-center gap-2">
+                                <a class="relative flex items-center gap-2" href="{{ route('checkout') }}" wire:navigate>
                                     Checkout Now
                                     <svg class="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
                                         fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -207,7 +207,7 @@ new #[Layout('layouts.frontend')] class extends Component {
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
                                     </svg>
-                                </span>
+                                </a>
                             </button>
                         </div>
 

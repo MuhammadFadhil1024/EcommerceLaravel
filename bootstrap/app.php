@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
         ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/xendit',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

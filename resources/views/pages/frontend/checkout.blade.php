@@ -3,13 +3,56 @@
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use App\Actions\Frontend\Checkout;
+use App\Actions\Frontend\SaveTransaction;
+use App\Actions\Payment\CalculateFinalPayment;
+use App\Actions\Payment\OneTimePayment;
+
 
 new #[Layout('layouts.frontend')] class extends Component {
+    public int $courierCost = 0;
+    public string $selectedCourierService = '';
+    public string $selectedCourierCode = '';
+    public string $selectedCourierServiceCode = '';
+    public string $selectedCourier = '';
+
     #[Computed]
     public function carts()
     {
         return app(Checkout::class)->handleCheckout();
+    }
+
+    #[Computed]
+    public function totalPayment(): int
+    {
+        return (int) $this->carts['grand_total'] + $this->courierCost;
+    }
+
+    #[On('courier-selected')]
+    public function updateCourierCost(int $cost = 0, string $service = '', string $courier = '', string $serviceCode = ''): void
+    {
+        $this->courierCost = max(0, $cost);
+        $this->selectedCourierService = $service;
+        $this->selectedCourierCode = $courier;
+        $this->selectedCourierServiceCode = $serviceCode;
+    }
+
+    public function payment()
+    {
+        $dataPayment = app(CalculateFinalPayment::class)->handleCalculateFinalPayment(
+            $this->selectedCourierService,
+            $this->selectedCourierCode,
+            $this->selectedCourierServiceCode,
+            $this->courierCost,
+        );
+
+        
+        $xenditPayment = app(OneTimePayment::class)->sessionPayment($dataPayment);
+
+        app(SaveTransaction::class)->handleSaveTransaction($dataPayment, $xenditPayment);
+        return redirect()->away($xenditPayment['payment_link_url']);
+
     }
 };
 
@@ -83,30 +126,14 @@ new #[Layout('layouts.frontend')] class extends Component {
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-end mt-8 gap-6">
                     <div class="w-full md:w-1/3">
                         <label class="block text-sm font-bold text-gray-900 mb-2">Select Courier</label>
-                        <div class="relative">
-                            <select
-                                class="w-full appearance-none bg-gray-50 border border-gray-300 text-gray-900 font-medium rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all">
-                                <option value="">Choose courier service...</option>
-                                <option value="jne" selected>JNE OKE (2-3 Days) - IDR 25,000</option>
-                                <option value="pos">POS REG (3-4 Days) - IDR 20,000</option>
-                                <option value="tiki">TIKI REG (1-2 Days) - IDR 35,000</option>
-                            </select>
-                            <div
-                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 20 20">
-                                    <path
-                                        d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                                </svg>
-                            </div>
-                        </div>
+                        <livewire:frontend.courier-list />
                     </div>
 
                     <div
                         class="w-full md:w-auto flex justify-between md:justify-end items-center md:gap-4 bg-gray-50 md:bg-transparent p-4 md:p-0 rounded-xl">
-                        <span class="text-gray-500 font-medium">Total ({{ $this->carts['total_items'] }} Items):</span>
-                        <span
-                            class="text-xl font-bold text-gray-900">{{ formatRupiah($this->carts['grand_total']) }}</span>
+                        <span class="text-gray-500 font-medium">Grand Total ({{ $this->carts['total_items'] }}
+                            Items):</span>
+                        <span class="text-xl font-bold text-gray-900">{{ formatRupiah($this->totalPayment) }}</span>
                     </div>
                 </div>
             </div>
@@ -120,8 +147,9 @@ new #[Layout('layouts.frontend')] class extends Component {
                             <span class="font-medium text-white">{{ formatRupiah($this->carts['grand_total']) }}</span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span>Courier Cost</span>
-                            <span class="font-medium text-white">IDR 25,000</span>
+                            <span>Courier Cost
+                                {{ $selectedCourierService !== '' ? '(' . $selectedCourierService . ')' : '' }}</span>
+                            <span class="font-medium text-white">{{ formatRupiah($courierCost) }}</span>
                         </div>
                     </div>
 
@@ -129,16 +157,14 @@ new #[Layout('layouts.frontend')] class extends Component {
                         <div class="flex justify-between items-center">
                             <span class="text-lg">Total Payment</span>
                             <span
-                                class="text-2xl md:text-3xl font-bold text-pink-400">{{ formatRupiah($this->carts['grand_total']) }}</span>
+                                class="text-2xl md:text-3xl font-bold text-pink-400">{{ formatRupiah($this->totalPayment) }}</span>
                         </div>
                     </div>
 
-                    <form action="#">
-                        <button type="submit"
-                            class="w-full bg-pink-400 hover:bg-pink-500 text-gray-900 font-bold text-lg py-4 rounded-xl transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-pink-300">
-                            Checkout Now
-                        </button>
-                    </form>
+                    <button type="submit" wire:click="payment()"
+                        class="w-full bg-pink-400 hover:bg-pink-500 text-gray-900 font-bold text-lg py-4 rounded-xl transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-pink-300">
+                        Checkout Now
+                    </button>
                 </div>
             </div>
         </div>

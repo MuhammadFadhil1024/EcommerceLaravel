@@ -98,10 +98,6 @@
                                     class="block rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-white">
                                     Cart
                                 </a>
-                                <a href="{{ route('dashboard') }}" wire:navigate
-                                    class="block rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-white">
-                                    Dashboard
-                                </a>
                             </div>
                         </li>
                     @else
