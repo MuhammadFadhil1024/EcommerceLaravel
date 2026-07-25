@@ -21,6 +21,9 @@
                     <flux:sidebar.item icon="shopping-bag" :href="route('product.index')" :current="request()->routeIs('product.*')" wire:navigate>
                         {{ __('Products') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="credit-card" :href="route('transaction.index')" :current="request()->routeIs('transaction.*')" wire:navigate>
+                        {{ __('Transactions') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
