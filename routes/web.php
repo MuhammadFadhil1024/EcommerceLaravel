@@ -26,3 +26,4 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
 require __DIR__.'/settings.php';
 require __DIR__.'/category.php';
 require __DIR__.'/product.php';
+require __DIR__.'/transaction.php';

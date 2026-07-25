@@ -6,6 +6,9 @@ use App\Models\Transaction;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use App\Actions\Frontend\DecreaseStock;
+use App\Actions\Transaction\GetTransaction;
+use App\Mail\PaymentSuccessMail;
+use Illuminate\Support\Facades\Mail;
 
 class HandleXenditWebhook
 {
@@ -72,7 +75,7 @@ class HandleXenditWebhook
             return;
         }
 
-        $transaction = Transaction::where('reference_id', $referenceId)->first();
+        $transaction = app(GetTransaction::class)->getTransactionByReferenceId($referenceId);
 
         if (! $transaction) {
             Log::warning('Xendit webhook: transaksi tidak ditemukan', [
@@ -102,16 +105,32 @@ class HandleXenditWebhook
 
         $transaction->update($updateData);
 
-        // decrease stock jika status berubah menjadi paid
         if ($newStatus === 'paid') {
+            // decrease stock jika status berubah menjadi paid
             app(DecreaseStock::class)->handleDecreaseStock($transaction);
+
+            // send invoice email
+
+            try {
+                
+                Mail::to($transaction->user->email)->send(
+                    new PaymentSuccessMail($transaction)
+                );
+            } catch (\Exception $e) {
+                Log::error([
+                    'message' => 'failed sending invoice succes payment ',
+                    'reference_id' => $referenceId,
+                    'error' => $e->getMessage()
+                ]);
+            }
+
+            Log::info('Xendit webhook: transaksi berhasil diupdate', [
+                'reference_id' => $referenceId,
+                'old_status' => $transaction->getOriginal('status'),
+                'new_status' => $newStatus,
+                'payment_id' => $paymentId,
+            ]);
         }
 
-        Log::info('Xendit webhook: transaksi berhasil diupdate', [
-            'reference_id' => $referenceId,
-            'old_status' => $transaction->getOriginal('status'),
-            'new_status' => $newStatus,
-            'payment_id' => $paymentId,
-        ]);
     }
 }
