@@ -3,33 +3,30 @@
 namespace App\Actions\Discount;
 
 use App\Models\Discount;
-use Illuminate\Pagination\LengthAwarePaginator;
+// use Illuminate\Pagination\LengthAwarePaginator;
 
 class SearchDiscounts
 {
-    public function handle(
-        string $search = '',
-        string $type = '',
-        string $level = '',
-        int $perPage = 10,
-    ): LengthAwarePaginator
+    public function execute(array $filters, int $perPage = 10)
     {
-        // Filter langsung di PHP, tanpa closure di query builder
         $query = Discount::query()->orderByDesc('created_at');
 
-        if ($search !== '') {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'LIKE', "%{$search}%")
-                    ->orWhere('code', 'LIKE', "%{$search}%");
+        // Filter search: carike name atau code
+        if ($filters['search'] !== '') {
+            $query->where(function ($q) use ($filters) {
+                $q->where('name', 'LIKE', "%{$filters['search']}%")
+                    ->orWhere('code', 'LIKE', "%{$filters['search']}%");
             });
         }
 
-        if ($type !== '') {
-            $query->where('value_type', $type);
+        // Filter type: Fixed / Percentage
+        if ($filters['type'] !== '') {
+            $query->where('value_type', $filters['type']);
         }
 
-        if ($level !== '') {
-            $query->where('level', $level);
+        // Filter level: PRODUCT / TRANSACTION
+        if ($filters['level'] !== '') {
+            $query->where('level', $filters['level']);
         }
 
         return $query->paginate($perPage)->withQueryString();

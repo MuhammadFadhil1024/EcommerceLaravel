@@ -4,6 +4,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Discount;
 use Livewire\Attributes\Computed;
+use App\Actions\Discount\SearchDiscounts;
 
 new class extends Component {
     use WithPagination;
@@ -15,27 +16,14 @@ new class extends Component {
     #[Computed]
     public function discounts()
     {
-        $query = Discount::query()->orderByDesc('created_at');
-
-        // Filter search: carike name atau code
-        if ($this->search !== '') {
-            $query->where(function ($q) {
-                $q->where('name', 'LIKE', "%{$this->search}%")
-                    ->orWhere('code', 'LIKE', "%{$this->search}%");
-            });
-        }
-
-        // Filter type: Fixed / Percentage
-        if ($this->type !== '') {
-            $query->where('value_type', $this->type);
-        }
-
-        // Filter level: PRODUCT / TRANSACTION
-        if ($this->level !== '') {
-            $query->where('level', $this->level);
-        }
-
-        return $query->paginate(10)->withQueryString();
+        return app(SearchDiscounts::class)->execute(
+            filters: [
+                'search' => $this->search,
+                'type' => $this->type,
+                'level' => $this->level,
+            ],
+            perPage: 10,
+        );
     }
 
     public function updated($property): void
@@ -120,10 +108,12 @@ new class extends Component {
                             @switch($discount->value_type)
                                 @case('FIXED_AMOUNT')
                                     Fixed Amount
-                                    @break
+                                @break
+
                                 @case('PERCENTAGE')
                                     Percentage
-                                    @break
+                                @break
+
                                 @default
                                     Uknown
                             @endswitch
@@ -134,16 +124,16 @@ new class extends Component {
                             </flux:button>
                         </flux:table.cell>
                     </flux:table.row>
-                @empty
-                    <flux:table.row>
-                        <flux:table.cell colspan="5">
-                            <div class="py-8 text-center text-zinc-500">
-                                Tidak ada data diskon.
-                            </div>
-                        </flux:table.cell>
-                    </flux:table.row>
-                @endforelse
-            </flux:table.rows>
-        </flux:table>
-    </x-pages::discount.layout>
-</section>
+                    @empty
+                        <flux:table.row>
+                            <flux:table.cell colspan="5">
+                                <div class="py-8 text-center text-zinc-500">
+                                    Tidak ada data diskon.
+                                </div>
+                            </flux:table.cell>
+                        </flux:table.row>
+                    @endforelse
+                </flux:table.rows>
+            </flux:table>
+        </x-pages::discount.layout>
+    </section>
