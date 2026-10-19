@@ -5,6 +5,8 @@ use Livewire\WithPagination;
 use App\Models\Discount;
 use Livewire\Attributes\Computed;
 use App\Actions\Discount\SearchDiscounts;
+use App\Models\Product;
+use App\Models\Category;
 
 new class extends Component {
     use WithPagination;
@@ -24,6 +26,30 @@ new class extends Component {
             ],
             perPage: 10,
         );
+    }
+
+    #[Computed]
+    public function targetNames($discount)
+    {
+        if ($discount->target_type === 'PRODUCT') {
+            $targets = $discount->discountTargets()->where('target_type', 'PRODUCT')->get();
+            $names = $targets->pluck('target_id')->map(function ($id) use ($discount) {
+                $product = Product::find($id);
+                return $product ? $product->name : 'Unknown';
+            });
+            return $names->implode(', ');
+        }
+
+        if ($discount->target_type === 'CATEGORY') {
+            $targets = $discount->discountTargets()->where('target_type', 'CATEGORY')->get();
+            $names = $targets->pluck('target_id')->map(function ($id) use ($discount) {
+                $category = Category::find($id);
+                return $category ? $category->name : 'Unknown';
+            });
+            return $names->implode(', ');
+        }
+
+        return 'None';
     }
 
     public function updated($property): void
@@ -96,7 +122,7 @@ new class extends Component {
                 <flux:table.column>Code</flux:table.column>
                 <flux:table.column>Applied On</flux:table.column>
                 <flux:table.column>Type</flux:table.column>
-                <flux:table.column></flux:table.column>
+                <flux:table.column>Target</flux:table.column>
             </flux:table.columns>
             <flux:table.rows>
                 @forelse ($this->discounts as $discount)
@@ -119,7 +145,9 @@ new class extends Component {
                             @endswitch
                         </flux:table.cell>
                         <flux:table.cell>
-                            <flux:button variant="primary" size="sm">
+                            <flux:button variant="primary" size="sm"
+                                href="{{ route('discount.create', ['discountId' => $discount->id]) }}"
+                                wire:navigate>
                                 Edit
                             </flux:button>
                         </flux:table.cell>

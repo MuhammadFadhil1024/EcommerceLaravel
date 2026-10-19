@@ -11,4 +11,9 @@ class GetDiscount {
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }
+
+    public function getByIdWithTargets(int $discountId): ?Discount
+    {
+        return Discount::with('discountTargets')->find($discountId);
+    }
 }

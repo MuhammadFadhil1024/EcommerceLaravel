@@ -18,6 +18,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('code', 50)->nullable()->unique();
             $table->enum('level', ['PRODUCT', 'TRANSACTION']);
+            $table->enum('target_type', ['PRODUCT', 'CATEGORY', 'NONE'])->default('NONE');
             $table->enum('value_type', ['PERCENTAGE', 'FIXED_AMOUNT']);
             $table->decimal('value', 15, 2);
             $table->decimal('max_discount_amount', 15, 2)->nullable();
