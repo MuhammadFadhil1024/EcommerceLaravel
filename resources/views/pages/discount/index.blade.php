@@ -2,11 +2,11 @@
 
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Discount;
 use Livewire\Attributes\Computed;
+use Illuminate\Support\Facades\Log;
 use App\Actions\Discount\SearchDiscounts;
-use App\Models\Product;
-use App\Models\Category;
+use App\Actions\Discount\DeleteDiscount;
+use App\Actions\Discount\UpdateDiscountStatus;
 
 new class extends Component {
     use WithPagination;
@@ -14,6 +14,8 @@ new class extends Component {
     public $search = '';
     public $type = '';
     public $level = '';
+
+    public $deleteDiscountId = null;
 
     #[Computed]
     public function discounts()
@@ -28,33 +30,9 @@ new class extends Component {
         );
     }
 
-    #[Computed]
-    public function targetNames($discount)
-    {
-        if ($discount->target_type === 'PRODUCT') {
-            $targets = $discount->discountTargets()->where('target_type', 'PRODUCT')->get();
-            $names = $targets->pluck('target_id')->map(function ($id) use ($discount) {
-                $product = Product::find($id);
-                return $product ? $product->name : 'Unknown';
-            });
-            return $names->implode(', ');
-        }
-
-        if ($discount->target_type === 'CATEGORY') {
-            $targets = $discount->discountTargets()->where('target_type', 'CATEGORY')->get();
-            $names = $targets->pluck('target_id')->map(function ($id) use ($discount) {
-                $category = Category::find($id);
-                return $category ? $category->name : 'Unknown';
-            });
-            return $names->implode(', ');
-        }
-
-        return 'None';
-    }
-
     public function updated($property): void
     {
-        if (in_array($property, ['search', 'status', 'level'])) {
+        if (in_array($property, ['search', 'type', 'level'])) {
             $this->resetPage();
         }
     }
@@ -62,9 +40,39 @@ new class extends Component {
     public function resetFilters(): void
     {
         $this->search = '';
-        $this->status = '';
+        $this->type = '';
         $this->level = '';
         $this->resetPage();
+    }
+
+    public function toggleStatus(int $discountId): void
+    {
+        try {
+            app(UpdateDiscountStatus::class)->toggle($discountId);
+            session()->flash('success', 'Discount status updated successfully.');
+        } catch (\Exception $e) {
+            Log::error('Error updating discount status: ' . $e->getMessage());
+            session()->flash('error', 'Failed to update discount status.');
+        }
+    }
+
+    public function confirmDelete(int $discountId): void
+    {
+        $this->deleteDiscountId = $discountId;
+        Flux::modal('confirm-delete-discount')->show();
+    }
+
+    public function delete(int $discountId): void
+    {
+        try {
+            app(DeleteDiscount::class)->delete($discountId);
+            Flux::modal('confirm-delete-discount')->close();
+            session()->flash('success', 'Discount deleted successfully.');
+        } catch (\Exception $e) {
+            Log::error('Error deleting discount: ' . $e->getMessage());
+            Flux::modal('confirm-delete-discount')->close();
+            session()->flash('error', 'Failed to delete discount.');
+        }
     }
 };
 
@@ -122,7 +130,8 @@ new class extends Component {
                 <flux:table.column>Code</flux:table.column>
                 <flux:table.column>Applied On</flux:table.column>
                 <flux:table.column>Type</flux:table.column>
-                <flux:table.column>Target</flux:table.column>
+                <flux:table.column>Status</flux:table.column>
+                <flux:table.column></flux:table.column>
             </flux:table.columns>
             <flux:table.rows>
                 @forelse ($this->discounts as $discount)
@@ -145,16 +154,48 @@ new class extends Component {
                             @endswitch
                         </flux:table.cell>
                         <flux:table.cell>
-                            <flux:button variant="primary" size="sm"
-                                href="{{ route('discount.create', ['discountId' => $discount->id]) }}"
-                                wire:navigate>
-                                Edit
-                            </flux:button>
+                            @if ($discount->status === 'ACTIVE')
+                                <flux:badge size="sm" color="green">Active</flux:badge>
+                            @elseif ($discount->status === 'INACTIVE')
+                                <flux:badge size="sm" color="red">Inactive</flux:badge>
+                            @else
+                                <flux:badge size="sm">Draft</flux:badge>
+                            @endif
+                        </flux:table.cell>
+                        <flux:table.cell>
+                            <div class="flex justify-end">
+                                <flux:dropdown position="bottom" align="end">
+                                    <flux:button variant="ghost" size="sm" icon="ellipsis-vertical"
+                                        inset="top bottom" />
+
+                                    <flux:menu>
+                                        <flux:menu.item
+                                            :href="route('discount.create', ['discountId' => $discount->id])"
+                                            icon="pencil" wire:navigate>
+                                            Edit
+                                        </flux:menu.item>
+
+                                        <flux:menu.item
+                                            wire:click="toggleStatus({{ $discount->id }})"
+                                            icon="{{ $discount->status === 'ACTIVE' ? 'pause' : 'play' }}">
+                                            {{ $discount->status === 'ACTIVE' ? 'Set Inactive' : 'Set Active' }}
+                                        </flux:menu.item>
+
+                                        <flux:menu.separator />
+
+                                        <flux:menu.item
+                                            wire:click="confirmDelete({{ $discount->id }})"
+                                            icon="trash" variant="danger">
+                                            Delete
+                                        </flux:menu.item>
+                                    </flux:menu>
+                                </flux:dropdown>
+                            </div>
                         </flux:table.cell>
                     </flux:table.row>
                     @empty
                         <flux:table.row>
-                            <flux:table.cell colspan="5">
+                            <flux:table.cell colspan="6">
                                 <div class="py-8 text-center text-zinc-500">
                                     Tidak ada data diskon.
                                 </div>
@@ -163,5 +204,6 @@ new class extends Component {
                     @endforelse
                 </flux:table.rows>
             </flux:table>
-        </x-pages::discount.layout>
+        @include('pages.discount.partial.modal-confirm-delete')
+    </x-pages::discount.layout>
     </section>
