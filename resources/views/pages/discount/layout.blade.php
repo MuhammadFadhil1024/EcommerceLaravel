@@ -4,6 +4,8 @@
             <flux:navlist.item :href="route('discount.index')" wire:navigate>{{ __('All Discounts') }}</flux:navlist.item>
             <flux:navlist.item :href="route('discount.create')" wire:navigate>{{ __('Create New Discount') }}
             </flux:navlist.item>
+            <flux:navlist.item :href="route('discount.log')" wire:navigate>{{ __('Snapshoot') }}
+            </flux:navlist.item>
         </flux:navlist>
         
     </div>
