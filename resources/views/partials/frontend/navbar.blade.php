@@ -56,7 +56,7 @@
                                 <a href="{{ route('cart') }}" wire:navigate class="text-black hover:underline">Cart</a>
                             </li>
                             <li>
-                                <a href="{{ route('login') }}" wire:navigate class="text-black hover:underline">Login</a>
+                                <a href="{{ route('login') }}" class="text-black hover:underline">Login</a>
                             </li>
                         @endauth
                     </ul>
@@ -129,7 +129,7 @@
                                 class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cart</a>
                         </li>
                         <li>
-                            <a href="{{ route('login') }}" wire:navigate
+                            <a href="{{ route('login') }}"
                                 class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Login</a>
                         </li>
                     @endauth

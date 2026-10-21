@@ -5,6 +5,7 @@ namespace App\Actions\Frontend;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 class GetProductCatalog
 {
@@ -16,13 +17,15 @@ class GetProductCatalog
             ->get(['id', 'name']);
     }
 
-    public function getProducts(string $search = '', ?int $categoryId = null, int $limit = 20)
+    public function getProducts(string $search = '', ?int $categoryId = null, int $limit = 20): Collection
     {
-        return $this->buildQuery($search, $categoryId)
+        $products = $this->buildQuery($search, $categoryId)
             ->with(['galleries', 'category'])
             ->latest('id')
             ->limit($limit)
             ->get();
+
+        return app(GetActiveProductDiscounts::class)->execute($products);
     }
 
     public function countProducts(string $search = '', ?int $categoryId = null): int
@@ -34,7 +37,7 @@ class GetProductCatalog
     {
         return Product::query()
             ->when($search !== '', function (Builder $query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%');
+                $query->where('name', 'like', '%'.$search.'%');
             })
             ->when($categoryId, function (Builder $query) use ($categoryId) {
                 $query->where('category_id', $categoryId);

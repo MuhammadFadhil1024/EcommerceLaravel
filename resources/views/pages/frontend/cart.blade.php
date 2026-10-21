@@ -122,15 +122,39 @@ new #[Layout('layouts.frontend')] class extends Component {
                                             class="font-semibold text-lg px-4 border border-gray-600">+</button>
                                     </form>
                                 </div>
-                                <h6 class="font-semibold text-base md:text-lg block md:hidden">
-                                    IDR {{ number_format($item['product']->price) }}
-                                </h6>
+                                <div class="md:hidden">
+                                    <h6 class="font-semibold text-base md:text-lg">
+                                        {{ formatRupiah($item['unit_price']) }}
+                                    </h6>
+                                    @if ($item['discount_amount'] > 0)
+                                        <div class="mt-1 flex items-center gap-2">
+                                            <span class="text-sm text-gray-400 line-through">
+                                                {{ formatRupiah($item['original_price']) }}
+                                            </span>
+                                            <span
+                                                class="rounded-full bg-pink-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                                                {{ $item['product']->discount_badge }}
+                                            </span>
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
                         </div>
 
                         <div class="px-4 w-auto flex-none md:w-2/12 hidden md:block">
                             <div class="text-center">
-                                <h6 class="font-semibold text-lg">IDR {{ number_format($item['product']->price) }}</h6>
+                                <h6 class="font-semibold text-lg">{{ formatRupiah($item['unit_price']) }}</h6>
+                                @if ($item['discount_amount'] > 0)
+                                    <div class="mt-1 flex flex-col items-center gap-1">
+                                        <span class="text-sm text-gray-400 line-through">
+                                            {{ formatRupiah($item['original_price']) }}
+                                        </span>
+                                        <span
+                                            class="rounded-full bg-pink-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                                            {{ $item['product']->discount_badge }}
+                                        </span>
+                                    </div>
+                                @endif
                             </div>
                         </div>
 

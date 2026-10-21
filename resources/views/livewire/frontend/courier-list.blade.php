@@ -7,7 +7,7 @@
         @forelse ($this->courierOptions as $option)
             <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
         @empty
-            <option value="" disabled>Courier belum tersedia</option>
+            <option value="" disabled>Courier not available yet</option>
         @endforelse
     </select>
 

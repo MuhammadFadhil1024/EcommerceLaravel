@@ -27,12 +27,12 @@
                 </div>
                 <p class="text-gray-600 font-medium mb-1">{{ $this->shippingAddress->phone_number }}</p>
                 <p class="text-gray-500 leading-relaxed">{{ $this->shippingAddress->full_address }}</p>
-                <p class="text-gray-500 leading-relaxed mt-1">Provinsi: {{ $this->shippingProvinceName }}</p>
+                <p class="text-gray-500 leading-relaxed mt-1">Province: {{ $this->shippingProvinceName }}</p>
             </div>
         </div>
     @else
         <div class="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-5 text-gray-600">
-            Belum ada data address. Klik <span class="font-semibold">Add Address</span> untuk menambahkan.
+            No address yet. Click <span class="font-semibold">Add Address</span> to add one.
         </div>
     @endif
 

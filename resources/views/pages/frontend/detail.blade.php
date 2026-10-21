@@ -2,6 +2,7 @@
 
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use App\Actions\Frontend\GetActiveProductDiscounts;
 use App\Actions\Frontend\GetProduct;
 use App\Actions\Frontend\AddToCart;
 use Livewire\Attributes\Computed;
@@ -16,7 +17,9 @@ new #[Layout('layouts.frontend')] class extends Component {
     #[Computed]
     public function product()
     {
-        return app(GetProduct::class)->getProductBySlug($this->slug);
+        $product = app(GetProduct::class)->getProductBySlug($this->slug);
+
+        return app(GetActiveProductDiscounts::class)->forProduct($product);
     }
 
     #[Computed]
@@ -109,8 +112,14 @@ new #[Layout('layouts.frontend')] class extends Component {
             </div>
             <div class="flex-1 px-4 md:py-4 md:px-4">
                 <h2 class="text-2xl md:text-3xl font-semibold mb-1 md:md-2">{{ $this->product->name }}</h2>
-                <div class="flex justify-start mb-4 md:mb-8">
+                <div class="flex flex-wrap items-center justify-start gap-3 mb-4 md:mb-8">
                     <div class="text-3xl md:text-4xl font-bold">{{ formatRupiah($this->product->price) }}</div>
+
+                    @if ($this->product->discount_badge)
+                        <span class="whitespace-nowrap rounded-full bg-pink-500 px-3 py-1 text-xs font-bold text-white shadow">
+                            {{ $this->product->discount_badge }}
+                        </span>
+                    @endif
                 </div>
                 <div class="flex flex-wrap items-center mb-2 md:mb-4">
                     <p class="text-lg md:text-xl font-semibold text-gray-500">Quantity</p>

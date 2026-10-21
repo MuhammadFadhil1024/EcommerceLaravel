@@ -1,40 +1,60 @@
-<?php 
+<?php
 
 namespace App\Actions\Frontend;
 
 use App\Models\Product;
-use App\Actions\Frontend\GetCart;
+use Illuminate\Database\Eloquent\Collection;
 
-Class Checkout
+class Checkout
 {
-
     /**
      * Mengeksekusi pengambilan semua product.
-     * @return \Illuminate\Database\Eloquent\Collection
+     *
+     * @return Collection
      */
-
     public function handleCheckout()
     {
-        $Cart = app(GetCart::class)->handleGetCart();
+        $cart = app(GetCart::class)->handleGetCart();
 
-        $DataCheckout = [];
+        $cartItems = [];
         $grandTotal = 0;
+        $originalGrandTotal = 0;
+        $totalDiscount = 0;
         $totalItems = 0;
-        foreach ($Cart as $item) {
-            $DataCheckout[] = [
-                'product_id' => $item['product_id'],
-                'quantity' => $item['quantity'],
-                'subtotal' => $item['quantity'] * $item['product']->price,
-                'product' => $item['product'],
-                $grandTotal += $item['quantity'] * $item['product']->price,
-                $totalItems += $item['quantity'],
-            ];
-        }
-        $DataCheckout['Cart'] = $DataCheckout;
-        $DataCheckout['grand_total'] = $grandTotal;
-        $DataCheckout['total_items'] = $totalItems;
-        // dd($DataCheckout);
 
-        return $DataCheckout;
+        foreach ($cart as $item) {
+            $quantity = (int) ($item['quantity'] ?? 0);
+            $unitPrice = (float) ($item['unit_price'] ?? $item['product']->price ?? 0);
+            $subtotal = (float) ($item['subtotal'] ?? ($quantity * $unitPrice));
+            $originalPrice = (float) ($item['original_price'] ?? $item['product']->price ?? $unitPrice);
+            $discountAmount = (float) ($item['discount_amount'] ?? 0);
+            $lineDiscount = (float) ($item['line_discount'] ?? ($discountAmount * $quantity));
+            $originalSubtotal = $originalPrice * $quantity;
+
+            $cartItems[] = [
+                'product_id' => $item['product_id'],
+                'quantity' => $quantity,
+                'original_price' => $originalPrice,
+                'unit_price' => $unitPrice,
+                'discount_amount' => $discountAmount,
+                'line_discount' => $lineDiscount,
+                'original_subtotal' => $originalSubtotal,
+                'subtotal' => $subtotal,
+                'product' => $item['product'],
+            ];
+
+            $grandTotal += $subtotal;
+            $originalGrandTotal += $originalSubtotal;
+            $totalDiscount += $lineDiscount;
+            $totalItems += $quantity;
+        }
+
+        return [
+            'Cart' => $cartItems,
+            'original_grand_total' => $originalGrandTotal,
+            'total_discount' => $totalDiscount,
+            'grand_total' => $grandTotal,
+            'total_items' => $totalItems,
+        ];
     }
 }

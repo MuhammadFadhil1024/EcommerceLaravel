@@ -21,7 +21,7 @@
             <form wire:submit.prevent="saveAddress" class="space-y-4">
                 <div>
                     <label for="fullAddress" class="mb-2 block text-sm font-semibold text-gray-700">Full Address</label>
-                    <textarea id="fullAddress" wire:model.live="fullAddress" rows="4" placeholder="Masukkan alamat lengkap"
+                    <textarea id="fullAddress" wire:model.live="fullAddress" rows="4" placeholder="Enter full address"
                         class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200"></textarea>
                     @error('fullAddress')
                         <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
@@ -30,7 +30,7 @@
 
                 <div>
                     <label for="phoneNumber" class="mb-2 block text-sm font-semibold text-gray-700">Phone Number</label>
-                    <input id="phoneNumber" type="number" wire:model.live="phoneNumber" placeholder="Masukkan nomor telepon"
+                    <input id="phoneNumber" type="number" wire:model.live="phoneNumber" placeholder="Enter phone number"
                         class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200" />
                     @error('phoneNumber')
                         <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
