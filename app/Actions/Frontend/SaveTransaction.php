@@ -19,15 +19,15 @@ class SaveTransaction
         $addressId = (int) ($dataPayment['address_id'] ?? 0);
 
         if ($userId <= 0) {
-            throw new Exception('User tidak ditemukan.');
+            throw new Exception('User not found.');
         }
 
         if ($addressId <= 0) {
-            throw new Exception('Alamat utama belum dipilih.');
+            throw new Exception('Primary address has not been selected.');
         }
 
         if (empty($cartItems)) {
-            throw new Exception('Cart kosong, tidak ada item yang bisa disimpan.');
+            throw new Exception('Cart is empty, there are no items to save.');
         }
 
         try {
@@ -51,8 +51,8 @@ class SaveTransaction
                 foreach ($cartItems as $item) {
                     $productId = (int) ($item['product_id'] ?? ($item['product']->id ?? 0));
                     $quantity = (int) ($item['quantity'] ?? 0);
-                    $price = (float) ($item['product']->price ?? 0);
-                    $totalPrice = $quantity * $price;
+                    $price = (float) ($item['unit_price'] ?? $item['product']->price ?? 0);
+                    $totalPrice = (float) ($item['subtotal'] ?? ($quantity * $price));
 
                     if ($productId <= 0 || $quantity <= 0) {
                         continue;
@@ -68,7 +68,7 @@ class SaveTransaction
                 }
 
                 if (empty($transactionItems)) {
-                    throw new Exception('Tidak ada item valid untuk disimpan.');
+                    throw new Exception('There are no valid items to save.');
                 }
 
                 TransactionItem::insert($transactionItems);
@@ -85,7 +85,7 @@ class SaveTransaction
                 'xenditPayment' => $xenditPayment,
             ]);
 
-            throw new Exception('Gagal menyimpan transaksi: ' . $e->getMessage());
+            throw new Exception('Failed to save transaction: '.$e->getMessage());
         }
     }
 

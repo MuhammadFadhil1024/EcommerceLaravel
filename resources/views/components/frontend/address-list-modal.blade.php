@@ -43,7 +43,7 @@
                         </div>
                     @empty
                         <div class="rounded-xl border border-dashed border-gray-300 p-4 text-sm text-gray-500">
-                            Belum ada address.
+                            No addresses yet.
                         </div>
                     @endforelse
                 </div>

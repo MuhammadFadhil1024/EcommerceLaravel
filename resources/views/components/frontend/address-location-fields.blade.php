@@ -24,10 +24,10 @@
         this.$refs.provinceInput.blur();
     }
 }" class="relative">
-    <label for="provinceSearch" class="mb-2 block text-sm font-semibold text-gray-700">Provinsi</label>
+    <label for="provinceSearch" class="mb-2 block text-sm font-semibold text-gray-700">Province</label>
 
     <input id="provinceSearch" type="text" x-ref="provinceInput" x-model="query" @focus="open = true" @input="open = true"
-        placeholder="Cari dan pilih provinsi" autocomplete="off"
+        placeholder="Search and select province" autocomplete="off"
         class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200" />
 
     <div x-cloak x-show="open" x-ref="provinceList"
@@ -39,7 +39,7 @@
         @endforeach
 
         <div x-show="!hasVisibleOptions()" class="px-4 py-3 text-sm text-gray-500">
-            Provinsi tidak ditemukan.
+            Province not found.
         </div>
     </div>
 </div>
@@ -71,7 +71,7 @@
     <label for="citySearch" class="mb-2 block text-sm font-semibold text-gray-700">City</label>
 
     <input id="citySearch" type="text" x-ref="cityInput" x-model="query" @focus="open = true; $wire.onCityFieldFocus()" @input="open = true"
-        placeholder="Cari dan pilih kota" autocomplete="off"
+        placeholder="Search and select city" autocomplete="off"
         class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200" />
 
     <div x-cloak x-show="open" x-ref="cityList"
@@ -83,7 +83,7 @@
         @endforeach
 
         <div x-show="!hasVisibleOptions()" class="px-4 py-3 text-sm text-gray-500">
-            Kota tidak ditemukan.
+            City not found.
         </div>
     </div>
 </div>
@@ -115,7 +115,7 @@
     <label for="districtSearch" class="mb-2 block text-sm font-semibold text-gray-700">District</label>
 
     <input id="districtSearch" type="text" x-ref="districtInput" x-model="query" @focus="open = true; $wire.onDistrictFieldFocus()" @input="open = true"
-        placeholder="Cari dan pilih kecamatan" autocomplete="off"
+        placeholder="Search and select district" autocomplete="off"
         class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200" />
 
     <div x-cloak x-show="open" x-ref="districtList"
@@ -127,7 +127,7 @@
         @endforeach
 
         <div x-show="!hasVisibleOptions()" class="px-4 py-3 text-sm text-gray-500">
-            Kecamatan tidak ditemukan.
+            District not found.
         </div>
     </div>
 </div>

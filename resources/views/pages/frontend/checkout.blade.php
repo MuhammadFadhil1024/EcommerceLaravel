@@ -84,9 +84,10 @@ new #[Layout('layouts.frontend')] class extends Component {
 
                 <div
                     class="hidden md:grid grid-cols-12 gap-4 border-b border-gray-200 pb-4 mb-6 text-sm font-semibold text-gray-400 uppercase tracking-wider">
-                    <div class="col-span-6">Product Detail</div>
-                    <div class="col-span-2 text-center">Quantity</div>
+                    <div class="col-span-5">Product Detail</div>
+                    <div class="col-span-1 text-center">Qty</div>
                     <div class="col-span-2 text-right">Unit Price</div>
+                    <div class="col-span-2 text-right">Discount</div>
                     <div class="col-span-2 text-right">Subtotal</div>
                 </div>
 
@@ -94,32 +95,82 @@ new #[Layout('layouts.frontend')] class extends Component {
                     {{-- @dd($cart) --}}
                     <div
                         class="flex flex-col md:grid md:grid-cols-12 gap-4 items-start md:items-center border-b border-gray-100 pb-6 mb-6">
-                        <div class="col-span-6 flex items-center gap-4 w-full">
+                        <div class="col-span-5 flex items-center gap-4 w-full min-w-0">
                             <img src="{{ $cart['product']->galleries()->exists() ? asset('storage/' . $cart['product']->galleries->first()->image) : 'data:image/gif;base64,R0lGODlhAQABAIAAAMLCwgAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==' }}"
                                 alt="{{ $cart['product']->name }}"
-                                class="w-20 h-20 md:w-24 md:h-24 object-cover rounded-xl border border-gray-100" />
-                            <div>
-                                <h6 class="font-bold text-lg text-gray-900 mb-1">{{ $cart['product']->name }}</h6>
-                                <p class="text-sm text-gray-500 mb-2 md:mb-0">{{ $cart['product']->category->name }}
+                                class="w-20 h-20 md:w-24 md:h-24 shrink-0 object-cover rounded-xl border border-gray-100" />
+                            <div class="min-w-0">
+                                <h6 class="font-bold text-lg text-gray-900 mb-1 break-words">
+                                    {{ $cart['product']->name }}</h6>
+                                <p class="text-sm text-gray-500 mb-2 md:mb-0 break-words">
+                                    {{ $cart['product']->category->name }}
                                 </p>
-                                <p class="text-pink-500 font-semibold md:hidden">
-                                    {{ formatRupiah($cart['product']->price) }}</p>
+                                <div class="md:hidden">
+                                    <p class="text-pink-500 font-semibold">
+                                        {{ formatRupiah($cart['unit_price']) }}</p>
+                                    @if ($cart['discount_amount'] > 0)
+                                        <div class="mt-1 flex flex-wrap items-center gap-2">
+                                            <span class="text-sm text-gray-400 line-through">
+                                                {{ formatRupiah($cart['original_price']) }}
+                                            </span>
+                                            <span
+                                                class="rounded-full bg-pink-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                                                {{ $cart['product']->discount_badge }}
+                                            </span>
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
                         </div>
 
-                        <div class="col-span-2 w-full flex justify-between md:block md:text-center mt-3 md:mt-0">
+                        <div class="col-span-1 w-full flex justify-between items-center gap-4 md:block md:text-center mt-3 md:mt-0">
                             <span class="text-gray-500 font-medium md:hidden">Quantity:</span>
-                            <span class="font-bold text-gray-900 text-lg md:text-base">{{ $cart['quantity'] }}</span>
+                            <span
+                                class="font-bold text-gray-900 text-lg md:text-base shrink-0">{{ $cart['quantity'] }}</span>
                         </div>
 
                         <div class="col-span-2 hidden md:block text-right font-medium text-gray-500">
-                            {{ formatRupiah($cart['product']->price) }}
+                            <div class="text-gray-900 font-semibold">{{ formatRupiah($cart['unit_price']) }}</div>
+                            @if ($cart['discount_amount'] > 0)
+                                <div class="mt-1 flex flex-col items-end gap-1">
+                                    <span class="text-sm text-gray-400 line-through">
+                                        {{ formatRupiah($cart['original_price']) }}
+                                    </span>
+                                    <span
+                                        class="rounded-full bg-pink-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                                        {{ $cart['product']->discount_badge }}
+                                    </span>
+                                </div>
+                            @endif
                         </div>
 
-                        <div class="col-span-2 w-full flex justify-between md:block text-right mt-3 md:mt-0">
-                            <span class="text-gray-500 font-medium md:hidden">Subtotal:</span>
-                            <span
-                                class="font-bold text-gray-900 text-lg md:text-base">{{ formatRupiah($cart['subtotal']) }}</span>
+                        <div class="col-span-2 hidden md:block text-right">
+                            @if ($cart['line_discount'] > 0)
+                                <span
+                                    class="font-semibold text-pink-500">-{{ formatRupiah($cart['line_discount']) }}</span>
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
+                        </div>
+
+                        <div class="flex md:hidden w-full items-center justify-between gap-4 text-sm">
+                            <span class="text-gray-500 font-medium">Discount:</span>
+                            <span class="font-semibold text-pink-500 text-right shrink-0">
+                                {{ $cart['line_discount'] > 0 ? '-' . formatRupiah($cart['line_discount']) : '-' }}
+                            </span>
+                        </div>
+
+                        <div class="col-span-2 w-full flex items-center justify-between gap-4 md:block text-right mt-3 md:mt-0">
+                            <span class="text-gray-500 font-medium md:hidden shrink-0">Subtotal:</span>
+                            <div class="min-w-0">
+                                <span
+                                    class="font-bold text-gray-900 text-lg md:text-base">{{ formatRupiah($cart['subtotal']) }}</span>
+                                @if ($cart['line_discount'] > 0)
+                                    <div class="text-sm text-gray-400 line-through">
+                                        {{ formatRupiah($cart['original_subtotal']) }}
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 @endforeach
@@ -130,10 +181,11 @@ new #[Layout('layouts.frontend')] class extends Component {
                     </div>
 
                     <div
-                        class="w-full md:w-auto flex justify-between md:justify-end items-center md:gap-4 bg-gray-50 md:bg-transparent p-4 md:p-0 rounded-xl">
+                        class="w-full md:w-auto flex justify-between md:justify-end items-center gap-4 bg-gray-50 md:bg-transparent p-4 md:p-0 rounded-xl">
                         <span class="text-gray-500 font-medium">Grand Total ({{ $this->carts['total_items'] }}
                             Items):</span>
-                        <span class="text-xl font-bold text-gray-900">{{ formatRupiah($this->totalPayment) }}</span>
+                        <span
+                            class="text-xl font-bold text-gray-900 text-right shrink-0 whitespace-nowrap tabular-nums">{{ formatRupiah($this->totalPayment) }}</span>
                     </div>
                 </div>
             </div>
@@ -142,22 +194,34 @@ new #[Layout('layouts.frontend')] class extends Component {
                     <h3 class="text-xl font-bold mb-6">Payment Summary</h3>
 
                     <div class="space-y-4 mb-6 text-gray-300">
-                        <div class="flex justify-between items-center">
-                            <span>Total Product</span>
-                            <span class="font-medium text-white">{{ formatRupiah($this->carts['grand_total']) }}</span>
+                        <div class="flex items-start justify-between gap-3">
+                            <span class="text-sm md:text-base leading-snug min-w-0 break-words">Original Price</span>
+                            <span
+                                class="text-sm md:text-base font-medium text-white text-right shrink-0 whitespace-nowrap tabular-nums">{{ formatRupiah($this->carts['original_grand_total']) }}</span>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span>Courier Cost
+                        <div class="flex items-start justify-between gap-3">
+                            <span class="text-sm md:text-base leading-snug min-w-0 break-words">Total Discount</span>
+                            <span
+                                class="text-sm md:text-base font-medium text-pink-400 text-right shrink-0 whitespace-nowrap tabular-nums">-{{ formatRupiah($this->carts['total_discount']) }}</span>
+                        </div>
+                        <div class="flex items-start justify-between gap-3">
+                            <span class="text-sm md:text-base leading-snug min-w-0 break-words">Product Subtotal</span>
+                            <span
+                                class="text-sm md:text-base font-medium text-white text-right shrink-0 whitespace-nowrap tabular-nums">{{ formatRupiah($this->carts['grand_total']) }}</span>
+                        </div>
+                        <div class="flex items-start justify-between gap-3">
+                            <span class="text-sm md:text-base leading-snug min-w-0 break-words">Courier Cost
                                 {{ $selectedCourierService !== '' ? '(' . $selectedCourierService . ')' : '' }}</span>
-                            <span class="font-medium text-white">{{ formatRupiah($courierCost) }}</span>
+                            <span
+                                class="text-sm md:text-base font-medium text-white text-right shrink-0 whitespace-nowrap tabular-nums">{{ formatRupiah($courierCost) }}</span>
                         </div>
                     </div>
 
                     <div class="border-t border-gray-700 pt-6 mb-8">
-                        <div class="flex justify-between items-center">
-                            <span class="text-lg">Total Payment</span>
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span class="text-base md:text-lg">Total Payment</span>
                             <span
-                                class="text-2xl md:text-3xl font-bold text-pink-400">{{ formatRupiah($this->totalPayment) }}</span>
+                                class="text-xl md:text-3xl font-bold text-pink-400 text-right whitespace-nowrap tabular-nums">{{ formatRupiah($this->totalPayment) }}</span>
                         </div>
                     </div>
 

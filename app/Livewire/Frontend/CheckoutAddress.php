@@ -15,23 +15,35 @@ use Livewire\Component;
 class CheckoutAddress extends Component
 {
     public array $provinceOptions = [];
+
     public array $cityOptions = [];
+
     public array $districtOptions = [];
 
     public string $provinceSearch = '';
+
     public string $citySearch = '';
+
     public string $districtSearch = '';
+
     public string $fullAddress = '';
+
     public string $phoneNumber = '';
+
     public string $typeOfAddress = 'home';
 
     public ?int $selectedProvinceId = null;
+
     public ?int $selectedCityId = null;
+
     public ?int $selectedDistrictId = null;
 
     public bool $showAddressModal = false;
+
     public bool $showAddressListModal = false;
+
     public string $addressModalMode = 'add';
+
     public bool $returnToAddressListAfterSave = false;
 
     public function mount(): void
@@ -78,6 +90,7 @@ class CheckoutAddress extends Component
     {
         if ($this->addresses->isNotEmpty()) {
             $this->openAddressListModal();
+
             return;
         }
 
@@ -126,7 +139,7 @@ class CheckoutAddress extends Component
             addressId: $addressId,
         );
 
-        session()->flash('address_message', 'Primary address berhasil diubah.');
+        session()->flash('address_message', 'Primary address updated successfully.');
     }
 
     public function saveAddress(): void
@@ -143,21 +156,24 @@ class CheckoutAddress extends Component
         $this->selectedProvinceId = $this->selectedProvinceId ?: $this->findProvinceIdByName($validated['provinceSearch']);
 
         if (! $this->selectedProvinceId) {
-            $this->addError('provinceSearch', 'Provinsi tidak ditemukan, silakan pilih dari daftar.');
+            $this->addError('provinceSearch', 'Province not found, please select from the list.');
+
             return;
         }
 
         $this->selectedCityId = $this->selectedCityId ?: $this->findCityIdByName($validated['citySearch']);
 
         if (! $this->selectedCityId) {
-            $this->addError('citySearch', 'Kota tidak ditemukan, silakan pilih dari daftar.');
+            $this->addError('citySearch', 'City not found, please select from the list.');
+
             return;
         }
 
         $this->selectedDistrictId = $this->selectedDistrictId ?: $this->findDistrictIdByName($validated['districtSearch']);
 
         if (! $this->selectedDistrictId) {
-            $this->addError('districtSearch', 'Kecamatan tidak ditemukan, silakan pilih dari daftar.');
+            $this->addError('districtSearch', 'District not found, please select from the list.');
+
             return;
         }
 
@@ -172,7 +188,7 @@ class CheckoutAddress extends Component
             address: null,
         );
 
-        session()->flash('address_message', 'Alamat berhasil disimpan.');
+        session()->flash('address_message', 'Address saved successfully.');
         $this->showAddressModal = false;
 
         if ($this->returnToAddressListAfterSave) {
@@ -228,8 +244,9 @@ class CheckoutAddress extends Component
         }
 
         if (! $provinceId) {
-            $this->addError('provinceSearch', 'Pilih provinsi terlebih dahulu sebelum memilih kota.');
+            $this->addError('provinceSearch', 'Please select a province before choosing a city.');
             $this->cityOptions = [];
+
             return;
         }
 
@@ -249,8 +266,9 @@ class CheckoutAddress extends Component
         }
 
         if (! $cityId) {
-            $this->addError('citySearch', 'Pilih kota terlebih dahulu sebelum memilih kecamatan.');
+            $this->addError('citySearch', 'Please select a city before choosing a district.');
             $this->districtOptions = [];
+
             return;
         }
 
@@ -358,18 +376,21 @@ class CheckoutAddress extends Component
     protected function getProvinceNameById(int $provinceId): string
     {
         $province = collect($this->provinceOptions)->firstWhere('id', $provinceId);
+
         return data_get($province, 'name', '-');
     }
 
     protected function getCityNameById(int $cityId): string
     {
         $city = collect($this->cityOptions)->firstWhere('id', $cityId);
+
         return data_get($city, 'name', '');
     }
 
     protected function getDistrictNameById(int $districtId): string
     {
         $district = collect($this->districtOptions)->firstWhere('id', $districtId);
+
         return data_get($district, 'name', '');
     }
 

@@ -16,6 +16,12 @@
                     {{ $product->category->name }}
                 </span>
             @endif
+
+            @if ($product->discount_badge)
+                <span class="absolute right-3 top-3 whitespace-nowrap rounded-full bg-pink-500 px-3 py-1 text-xs font-bold text-white shadow">
+                    {{ $product->discount_badge }}
+                </span>
+            @endif
         </div>
 
         <div class="space-y-1 p-4">

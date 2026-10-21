@@ -12,6 +12,15 @@
   @apply absolute inset-0 z-10;
 }
 
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* card */
 
 .card .card-shadow {

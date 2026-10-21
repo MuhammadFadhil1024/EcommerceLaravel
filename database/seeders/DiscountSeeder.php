@@ -3,88 +3,132 @@
 namespace Database\Seeders;
 
 use App\Models\Discount;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DiscountSeeder extends Seeder
 {
     public function run(): void
     {
-        // Make sure at least 1 user exists for created_by (FK constraint).
-        // Use the first existing user if there is one; otherwise create a dummy user.
         $adminId = User::query()->value('id') ?? User::factory()->create([
             'name' => 'Admin Seeder',
             'email' => 'admin-seeder@example.com',
         ])->id;
 
-        $names = [
-            'Independence Day Sale', 'Year End Flash Sale', 'New Customer Promo',
-            'Payday Discount', 'Online Shopping Day Special', 'Store Anniversary Discount',
-            'Ramadan Promo', 'Christmas & New Year Discount', 'Weekend Cashback',
-            'New Member Discount', 'National Online Shopping Day', '12PM Flash Sale',
-            'Best Seller Discount', 'Bundle Saver Promo', 'Reseller Exclusive Discount',
-            'Clearance Sale', 'New Arrival Discount', 'Double Date Promo',
-            'Weekend Discount', 'Seasonal Changeover Sale',
+        $promos = [
+            'oslo-3-seater-sofa' => ['value_type' => 'PERCENTAGE', 'value' => 10, 'max_discount_amount' => 500000, 'status' => 'ACTIVE'],
+            'luna-coffee-table' => ['value_type' => 'FIXED_AMOUNT', 'value' => 250000, 'max_discount_amount' => null, 'status' => 'DRAFT'],
+            'aurora-queen-bed' => ['value_type' => 'PERCENTAGE', 'value' => 10, 'max_discount_amount' => 500000, 'status' => 'INACTIVE'],
+            'haven-wardrobe' => ['value_type' => 'FIXED_AMOUNT', 'value' => 250000, 'max_discount_amount' => null, 'status' => 'ACTIVE'],
+            'oak-dining-table' => ['value_type' => 'PERCENTAGE', 'value' => 10, 'max_discount_amount' => 500000, 'status' => 'DRAFT'],
+            'velvet-dining-chair' => ['value_type' => 'FIXED_AMOUNT', 'value' => 250000, 'max_discount_amount' => null, 'status' => 'INACTIVE'],
+            'ergo-office-chair' => ['value_type' => 'PERCENTAGE', 'value' => 10, 'max_discount_amount' => 500000, 'status' => 'ACTIVE'],
+            'walnut-writing-desk' => ['value_type' => 'FIXED_AMOUNT', 'value' => 250000, 'max_discount_amount' => null, 'status' => 'DRAFT'],
+            'teak-patio-set' => ['value_type' => 'PERCENTAGE', 'value' => 10, 'max_discount_amount' => 500000, 'status' => 'INACTIVE'],
+            'terrace-lounge-chair' => ['value_type' => 'FIXED_AMOUNT', 'value' => 250000, 'max_discount_amount' => null, 'status' => 'ACTIVE'],
         ];
 
-        foreach ($names as $i => $name) {
-            // Alternate level: PRODUCT or TRANSACTION
-            $level = $i % 2 === 0 ? 'PRODUCT' : 'TRANSACTION';
+        $products = Product::query()
+            ->whereIn('slug', array_keys($promos))
+            ->get()
+            ->keyBy('slug');
 
-            // Alternate value type: PERCENTAGE or FIXED_AMOUNT
-            $valueType = $i % 3 === 0 ? 'FIXED_AMOUNT' : 'PERCENTAGE';
+        if ($products->isEmpty()) {
+            $this->command->warn('No furniture products found. Run ProductSeeder first.');
 
-            // Value must respect the chk_percent / chk_value constraints
-            $value = $valueType === 'PERCENTAGE'
-                ? fake()->numberBetween(5, 50)          // percentage, safely below 100
-                : fake()->numberBetween(10000, 150000);  // fixed amount in Rupiah
-
-            // max_discount_amount only makes sense for PERCENTAGE
-            $maxDiscount = $valueType === 'PERCENTAGE'
-                ? fake()->numberBetween(20000, 100000)
-                : null;
-
-            // min_purchase_amount is more relevant for TRANSACTION level
-            $minPurchase = $level === 'TRANSACTION'
-                ? fake()->randomElement([0, 100000, 250000, 500000])
-                : 0;
-
-            // Mix of past, ongoing, and upcoming periods,
-            // while always keeping end_at > start_at (chk_period constraint)
-            $startAt = Carbon::now()->subDays(fake()->numberBetween(-30, 30));
-            $endAt = (clone $startAt)->addDays(fake()->numberBetween(7, 60));
-
-            // Alternate status so the status filter can be tested with every option
-            $status = match ($i % 3) {
-                0 => 'ACTIVE',
-                1 => 'DRAFT',
-                default => 'INACTIVE',
-            };
-
-            Discount::create([
-                'name' => $name,
-                'description' => fake()->sentence(10),
-                'code' => $level === 'TRANSACTION'
-                    ? strtoupper(fake()->unique()->bothify('PROMO###'))
-                    : null, // product-level discounts are usually automatic, no code needed
-                'level' => $level,
-                'value_type' => $valueType,
-                'value' => $value,
-                'max_discount_amount' => $maxDiscount,
-                'min_purchase_amount' => $minPurchase,
-                'start_at' => $startAt,
-                'end_at' => $endAt,
-                'usage_limit_total' => fake()->optional(0.7)->numberBetween(50, 500),
-                'usage_limit_per_user' => fake()->optional(0.5)->numberBetween(1, 5),
-                'used_count' => 0,
-                'is_stackable' => fake()->boolean(70),
-                'priority' => fake()->numberBetween(0, 10),
-                'status' => $status,
-                'created_by' => $adminId,
-            ]);
+            return;
         }
 
-        $this->command->info('20 discount records seeded successfully.');
+        $startAt = now()->subDays(3)->startOfDay();
+        $endAt = now()->addDays(30)->endOfDay();
+
+        DB::transaction(function () use ($adminId, $promos, $products, $startAt, $endAt) {
+            $upsert = function (array $key, array $values) {
+                $discount = Discount::withTrashed()->updateOrCreate($key, $values);
+
+                if ($discount->trashed()) {
+                    $discount->restore();
+                }
+
+                return $discount;
+            };
+
+            foreach ($promos as $slug => $promo) {
+                $product = $products->get($slug);
+
+                if (! $product) {
+                    continue;
+                }
+
+                $discount = $upsert(
+                    ['code' => 'SEED_PROD_'.strtoupper(str_replace('-', '_', $slug))],
+                    [
+                        'name' => $product->name.' Promo',
+                        'description' => 'Automatic promotional discount for '.$product->name.'.',
+                        'level' => 'PRODUCT',
+                        'target_type' => 'PRODUCT',
+                        'value_type' => $promo['value_type'],
+                        'value' => $promo['value'],
+                        'max_discount_amount' => $promo['max_discount_amount'],
+                        'min_purchase_amount' => 0,
+                        'start_at' => $startAt,
+                        'end_at' => $endAt,
+                        'usage_limit_total' => 50,
+                        'usage_limit_per_user' => 1,
+                        'is_stackable' => true,
+                        'priority' => 1,
+                        'status' => $promo['status'],
+                        'created_by' => $adminId,
+                    ]
+                );
+
+                $discount->discountTargets()->delete();
+                $discount->discountTargets()->create([
+                    'target_type' => 'PRODUCT',
+                    'target_id' => $product->id,
+                ]);
+            }
+
+            $shared = $upsert(
+                ['code' => 'SEED_SHARED_MULTI'],
+                [
+                    'name' => 'LuxSpace Multi-Product Promo',
+                    'description' => 'Save 15% when you purchase selected furniture pieces together.',
+                    'level' => 'PRODUCT',
+                    'target_type' => 'PRODUCT',
+                    'value_type' => 'PERCENTAGE',
+                    'value' => 15,
+                    'max_discount_amount' => 1000000,
+                    'min_purchase_amount' => 1000000,
+                    'start_at' => $startAt,
+                    'end_at' => $endAt,
+                    'usage_limit_total' => 100,
+                    'usage_limit_per_user' => 1,
+                    'is_stackable' => false,
+                    'priority' => 10,
+                    'status' => 'ACTIVE',
+                    'created_by' => $adminId,
+                ]
+            );
+
+            $shared->discountTargets()->delete();
+
+            foreach (['oslo-3-seater-sofa', 'oak-dining-table', 'ergo-office-chair'] as $slug) {
+                $product = $products->get($slug);
+
+                if (! $product) {
+                    continue;
+                }
+
+                $shared->discountTargets()->create([
+                    'target_type' => 'PRODUCT',
+                    'target_id' => $product->id,
+                ]);
+            }
+        });
+
+        $this->command->info('11 furniture discounts seeded successfully.');
     }
 }

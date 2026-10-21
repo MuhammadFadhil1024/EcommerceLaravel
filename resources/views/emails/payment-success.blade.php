@@ -56,7 +56,7 @@
                                         </td>
                                         <td style="box-sizing:border-box;text-align:end;border-top:1px solid #dcdcdc;border-bottom:1px solid #dcdcdc;padding:12px 0;">
                                             <!-- PERBAIKAN: Mengalikan harga dengan kuantitas agar tampil subtotal baris -->
-                                            {{ formatRupiah($item->product->price * $item->quantity) }}
+                                            {{ formatRupiah($item->total_price) }}
                                         </td>
                                     </tr>
                                 @endforeach

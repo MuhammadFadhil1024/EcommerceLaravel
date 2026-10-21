@@ -1,32 +1,30 @@
-<?php 
+<?php
 
 namespace App\Actions\Payment;
 
-use App\Models\Address;
-use App\Models\Product;
-use App\Actions\Frontend\GetCart;
 use App\Actions\Frontend\CalculateCoastCourier;
+use App\Actions\Frontend\GetCart;
+use App\Models\Address;
 use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
-Class CalculateFinalPayment
+class CalculateFinalPayment
 {
     public function handleCalculateFinalPayment(
         string $selectedCourierService,
         string $selectedCourierCode,
         string $selectedCourierServiceCode,
         int $courierCost,
-    )
-    {
+    ) {
         $destinationDistrictId = (int) Address::query()
             ->where('user_id', Auth::id())
             ->where('is_primary', true)
             ->value('district');
 
         if ($destinationDistrictId <= 0) {
-            throw new Exception('Alamat utama belum tersedia atau kecamatan belum valid.');
+            throw new Exception('Primary address is not available or the district is invalid.');
         }
 
         $Cart = app(GetCart::class)->handleGetCart();
@@ -66,13 +64,13 @@ Class CalculateFinalPayment
         );
 
         if ($verifiedCourierCost <= 0) {
-            throw new Exception('Layanan kurir yang dipilih tidak ditemukan, silakan pilih ulang.');
+            throw new Exception('The selected courier service was not found, please choose again.');
         }
 
         $DataPayment = [];
         $grandTotal = 0;
         foreach ($Cart as $item) {
-            $grandTotal += $item['quantity'] * $item['product']->price;
+            $grandTotal += (float) ($item['subtotal'] ?? ($item['quantity'] * $item['product']->price));
         }
         $DataPayment['grand_total'] = $grandTotal;
         $DataPayment['courier_service'] = $selectedCourierService;
@@ -87,7 +85,7 @@ Class CalculateFinalPayment
             ->value('id');
 
         // dd($DataPayment);
-        
+
         return $DataPayment;
     }
 
@@ -123,6 +121,7 @@ Class CalculateFinalPayment
     {
         $filtered = $rows->filter(function ($item) use ($courierCode) {
             $itemCourierCode = trim(strtolower((string) data_get($item, 'code', '')));
+
             return $courierCode === '' || $itemCourierCode === '' || $itemCourierCode === $courierCode;
         });
 
@@ -147,6 +146,7 @@ Class CalculateFinalPayment
     {
         $selectedCourier = $rows->first(function ($item) use ($courierCode) {
             $itemCourierCode = trim(strtolower((string) data_get($item, 'code', '')));
+
             return $courierCode === '' || $itemCourierCode === $courierCode;
         });
 

@@ -2,6 +2,7 @@
 
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use App\Actions\Frontend\GetActiveProductDiscounts;
 use App\Actions\Frontend\GetProduct;
 use Livewire\Attributes\Computed;
 
@@ -9,7 +10,9 @@ new #[Layout('layouts.frontend')] class extends Component {
     #[Computed]
     public function products()
     {
-        return app(GetProduct::class)->getAllProducts();
+        $products = app(GetProduct::class)->getAllProducts();
+
+        return app(GetActiveProductDiscounts::class)->execute($products);
     }
 };
 
@@ -122,12 +125,12 @@ new #[Layout('layouts.frontend')] class extends Component {
                 </h3>
             </div>
         </div>
-        <div class="overflow-x-hidden px-4" id="carousel">
+        <div class="no-scrollbar overflow-x-auto px-4 cursor-grab" id="carousel">
             <div class="container mx-auto"></div>
             <!-- <div class="overflow-hidden z-10"> -->
-            <div class="flex -mx-4 flex-row relative">
+            <div class="flex -mx-4 flex-row relative w-max">
                 <!-- START: JUST ARRIVED ROW 1 -->
-                <div class="px-4 relative card group">
+                <div class="px-4 relative card group shrink-0">
                     <div class="rounded-xl overflow-hidden card-shadow relative" style="width: 287px; height: 386px">
                         <div
                             class="absolute opacity-0 group-hover:opacity-100 transition duration-200 flex items-center justify-center w-full h-full bg-black bg-opacity-35">
@@ -151,9 +154,16 @@ new #[Layout('layouts.frontend')] class extends Component {
                     <!-- fake children -->
                 </a>
                 @foreach ($this->products as $product)
-                    <div class="px-4 relative card group">
+                    <div class="px-4 relative card group shrink-0">
                         <div class="rounded-xl overflow-hidden card-shadow relative"
                             style="width: 287px; height: 386px">
+                            @if ($product->discount_badge)
+                                <span
+                                    class="absolute right-3 top-3 z-10 whitespace-nowrap rounded-full bg-pink-500 px-3 py-1 text-xs font-bold text-white shadow">
+                                    {{ $product->discount_badge }}
+                                </span>
+                            @endif
+
                             <div
                                 class="absolute opacity-0 group-hover:opacity-100 transition duration-200 flex items-center justify-center w-full h-full bg-black bg-opacity-35">
                                 <div

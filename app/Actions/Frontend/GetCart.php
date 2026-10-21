@@ -45,6 +45,8 @@ Class GetCart
                 }
             }
 
+            $cartItems = $this->applyPricing($cartItems)->all();
+
             Log::info('Cart items for user ' . Auth::id() . ': ' . json_encode($cartItems));
             return $cartItems;
         } else {
@@ -58,7 +60,7 @@ Class GetCart
                     'product' => app(GetProduct::class)->getProductById($productId),
                 ];  
             }
-            return collect($cartItems);
+            return $this->applyPricing($cartItems);
         }
     }
 
@@ -69,12 +71,38 @@ Class GetCart
 
     public function calculateTotalPriceCart()
     {
-            $cartItems = $this->handleGetCart();
-            $totalPrice = 0;
-            foreach ($cartItems as $item) {
-                $totalPrice += $item['product']->price * $item['quantity'];
-            }
-            return $totalPrice;
+        return collect($this->handleGetCart())
+            ->sum(fn ($item) => (float) ($item['subtotal'] ?? 0));
+    }
+
+    private function applyPricing($cartItems)
+    {
+        $items = collect($cartItems);
+        $products = $items->pluck('product')->filter()->values();
+
+        $purchaseSubtotal = $items->sum(
+            fn ($item) => (float) ($item['product']?->price ?? 0) * (int) ($item['quantity'] ?? 0)
+        );
+
+        if ($products->isNotEmpty()) {
+            app(GetActiveProductDiscounts::class)->execute($products, (float) $purchaseSubtotal);
+        }
+
+        return $items->map(function ($item) {
+            $product = $item['product'] ?? null;
+            $quantity = (int) ($item['quantity'] ?? 0);
+            $originalPrice = (float) ($product?->price ?? 0);
+            $unitPrice = (float) ($product?->final_price ?? $originalPrice);
+            $discountAmount = (float) ($product?->discount_amount ?? 0);
+
+            $item['original_price'] = $originalPrice;
+            $item['unit_price'] = $unitPrice;
+            $item['discount_amount'] = $discountAmount;
+            $item['line_discount'] = $discountAmount * $quantity;
+            $item['subtotal'] = $unitPrice * $quantity;
+
+            return $item;
+        });
     }
 
     public function decreaseQuantity($productId)
